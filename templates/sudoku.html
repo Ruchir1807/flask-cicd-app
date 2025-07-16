@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>Sudoku</title>
+    <style>
+        input {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sudoku Game</h1>
+    <form method="post" action="/submit">
+        <table>
+            {% for i in range(9) %}
+            <tr>
+                {% for j in range(9) %}
+                <td>
+                    <input type="text" maxlength="1" name="cell-{{i}}-{{j}}" value="{{ board[i][j] if board[i][j] != 0 else '' }}">
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
