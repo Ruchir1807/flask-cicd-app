@@ -24,23 +24,29 @@ pipeline {
         stage('Load Image into Minikube') {
             steps {
                 echo "Loading image into Minikube..."
-                sh 'minikube image load flask-k8s-app'
+                timeout(time: 2, unit: 'MINUTES') {
+                    sh 'minikube image load flask-k8s-app'
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying to Kubernetes using KUBECONFIG at $KUBECONFIG..."
-                sh '''
-                    kubectl apply -f deployment.yaml --validate=false
-                    kubectl apply -f service.yaml --validate=false
-                '''
+                timeout(time: 2, unit: 'MINUTES') {
+                    sh '''
+                        kubectl apply -f deployment.yaml --validate=true
+                        kubectl apply -f service.yaml --validate=true
+                    '''
+                }
             }
         }
 
         stage('Debug Info') {
             steps {
                 echo 'Getting pod status and logs for debug...'
+                // Add a small wait to give time for pod creation
+                sh 'sleep 10'
                 sh 'kubectl get pods -o wide'
                 sh 'kubectl describe pod $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
                 sh 'kubectl logs $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
@@ -50,10 +56,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline executed successfully."
+            echo "✅ Pipeline executed successfully."
         }
         failure {
-            echo "Pipeline failed. Please check the logs above for details."
+            echo "❌ Pipeline failed. Please check the logs above for details."
         }
     }
 }
