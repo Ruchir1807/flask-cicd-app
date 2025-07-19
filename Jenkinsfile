@@ -3,8 +3,7 @@ pipeline {
 
     environment {
         // Correct path to Minikube config copied into Jenkins
-        KUBECONFIG = '/var/lib/jenkins/.minikube/profiles/minikube/config'
-    }
+    KUBECONFIG = '/var/lib/jenkins/.kube/config'    }
 
     stages {
         stage('Clone Repo') {
