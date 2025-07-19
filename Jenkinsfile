@@ -37,6 +37,15 @@ pipeline {
                 '''
             }
         }
+
+        stage('Debug Info') {
+            steps {
+                echo 'Getting pod status and logs for debug...'
+                sh 'kubectl get pods -o wide'
+                sh 'kubectl describe pod $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
+                sh 'kubectl logs $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
+            }
+        }
     }
 
     post {
