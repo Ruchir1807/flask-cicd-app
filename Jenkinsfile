@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        // Correct path to Minikube config copied into Jenkins
+        KUBECONFIG = '/var/lib/jenkins/.minikube/profiles/minikube/config'
     }
 
     stages {
@@ -27,7 +28,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    export KUBECONFIG=$KUBECONFIG
+                    echo "Using KUBECONFIG at: $KUBECONFIG"
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
                 '''
