@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Ensure Jenkins uses the correct KUBECONFIG path
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        // Reset to your personal KUBECONFIG path
+        KUBECONFIG = '/home/ruchir/.kube/config'
     }
 
     stages {
@@ -45,7 +45,6 @@ pipeline {
         stage('Debug Info') {
             steps {
                 echo 'Getting pod status and logs for debug...'
-                // Add a small wait to give time for pod creation
                 sh 'sleep 10'
                 sh 'kubectl get pods -o wide'
                 sh 'kubectl describe pod $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
