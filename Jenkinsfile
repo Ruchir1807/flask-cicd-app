@@ -6,6 +6,13 @@ pipeline {
     }
 
     stages {
+        stage('Clone Repository') {
+            steps {
+                echo "🔄 Cloning repository..."
+                git branch: 'main', url: 'https://github.com/Ruchir1807/flask-cicd-app.git'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo "📦 Building Docker image..."
