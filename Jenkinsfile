@@ -26,6 +26,9 @@ pipeline {
             }
         }
 
+        // ⚠️ Disabled because Jenkins can't access minikube CLI inside container
+        // If running Jenkins outside container or in host, uncomment below
+        /*
         stage('Load Image into Minikube') {
             steps {
                 echo "📤 Loading image into Minikube..."
@@ -34,14 +37,15 @@ pipeline {
                 }
             }
         }
+        */
 
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
                 timeout(time: 2, unit: 'MINUTES') {
                     sh '''
-                        kubectl apply -f flask-cicd-app/k8s/deployment.yaml --validate=true
-                        kubectl apply -f flask-cicd-app/k8s/service.yaml --validate=true
+                        kubectl apply -f flask-cicd-app/deployment.yaml --validate=true
+                        kubectl apply -f flask-cicd-app/service.yaml --validate=true
                     '''
                 }
             }
