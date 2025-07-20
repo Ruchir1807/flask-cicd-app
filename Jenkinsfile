@@ -2,28 +2,20 @@ pipeline {
     agent any
 
     environment {
-        // Updated KUBECONFIG path accessible to Jenkins user
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'  // Ensure this file is readable by Jenkins
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                echo "Cloning GitHub repository..."
-                git branch: 'main', url: 'https://github.com/Ruchir1807/flask-cicd-app.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
+                echo "📦 Building Docker image..."
                 sh 'docker build -t flask-k8s-app .'
             }
         }
 
         stage('Load Image into Minikube') {
             steps {
-                echo "Loading image into Minikube..."
+                echo "📤 Loading image into Minikube..."
                 timeout(time: 2, unit: 'MINUTES') {
                     sh 'minikube image load flask-k8s-app'
                 }
@@ -32,11 +24,11 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo "Deploying to Kubernetes using KUBECONFIG at $KUBECONFIG..."
+                echo "🚀 Deploying to Kubernetes..."
                 timeout(time: 2, unit: 'MINUTES') {
                     sh '''
-                        kubectl --kubeconfig=$KUBECONFIG apply -f deployment.yaml --validate=true
-                        kubectl --kubeconfig=$KUBECONFIG apply -f service.yaml --validate=true
+                        kubectl apply -f k8s/deployment.yaml --validate=true
+                        kubectl apply -f k8s/service.yaml --validate=true
                     '''
                 }
             }
@@ -44,11 +36,20 @@ pipeline {
 
         stage('Debug Info') {
             steps {
-                echo 'Getting pod status and logs for debug...'
+                echo "🔍 Getting pod status and logs..."
                 sh 'sleep 10'
-                sh 'kubectl --kubeconfig=$KUBECONFIG get pods -o wide'
-                sh 'kubectl --kubeconfig=$KUBECONFIG describe pod $(kubectl --kubeconfig=$KUBECONFIG get pods -o jsonpath="{.items[0].metadata.name}") || true'
-                sh 'kubectl --kubeconfig=$KUBECONFIG logs $(kubectl --kubeconfig=$KUBECONFIG get pods -o jsonpath="{.items[0].metadata.name}") || true'
+
+                script {
+                    def podName = sh(
+                        script: 'kubectl get pods -o jsonpath="{.items[0].metadata.name}"',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "📄 Pod Name: ${podName}"
+
+                    sh "kubectl describe pod ${podName} || true"
+                    sh "kubectl logs ${podName} || true"
+                }
             }
         }
     }
