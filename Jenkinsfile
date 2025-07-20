@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Reset to your personal KUBECONFIG path
-        KUBECONFIG = '/home/ruchir/.kube/config'
+        // Updated KUBECONFIG path accessible to Jenkins user
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -35,8 +35,8 @@ pipeline {
                 echo "Deploying to Kubernetes using KUBECONFIG at $KUBECONFIG..."
                 timeout(time: 2, unit: 'MINUTES') {
                     sh '''
-                        kubectl apply -f deployment.yaml --validate=true
-                        kubectl apply -f service.yaml --validate=true
+                        kubectl --kubeconfig=$KUBECONFIG apply -f deployment.yaml --validate=true
+                        kubectl --kubeconfig=$KUBECONFIG apply -f service.yaml --validate=true
                     '''
                 }
             }
@@ -46,9 +46,9 @@ pipeline {
             steps {
                 echo 'Getting pod status and logs for debug...'
                 sh 'sleep 10'
-                sh 'kubectl get pods -o wide'
-                sh 'kubectl describe pod $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
-                sh 'kubectl logs $(kubectl get pods -o jsonpath="{.items[0].metadata.name}") || true'
+                sh 'kubectl --kubeconfig=$KUBECONFIG get pods -o wide'
+                sh 'kubectl --kubeconfig=$KUBECONFIG describe pod $(kubectl --kubeconfig=$KUBECONFIG get pods -o jsonpath="{.items[0].metadata.name}") || true'
+                sh 'kubectl --kubeconfig=$KUBECONFIG logs $(kubectl --kubeconfig=$KUBECONFIG get pods -o jsonpath="{.items[0].metadata.name}") || true'
             }
         }
     }
