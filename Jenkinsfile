@@ -2,21 +2,27 @@ pipeline {
     agent any
 
     environment {
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'  // Ensure this file is readable by Jenkins
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repo') {
             steps {
-                echo "🔄 Cloning repository..."
-                git branch: 'main', url: 'https://github.com/Ruchir1807/flask-cicd-app.git'
+                echo "📥 Cloning repo..."
+                sh 'rm -rf flask-cicd-app'
+                sh 'git clone https://github.com/Ruchir1807/flask-cicd-app.git'
+                dir('flask-cicd-app') {
+                    sh 'ls -l'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "📦 Building Docker image..."
-                sh 'docker build -t flask-k8s-app .'
+                dir('flask-cicd-app') {
+                    echo "📦 Building Docker image..."
+                    sh 'docker build -t flask-k8s-app .'
+                }
             }
         }
 
@@ -34,8 +40,8 @@ pipeline {
                 echo "🚀 Deploying to Kubernetes..."
                 timeout(time: 2, unit: 'MINUTES') {
                     sh '''
-                        kubectl apply -f k8s/deployment.yaml --validate=true
-                        kubectl apply -f k8s/service.yaml --validate=true
+                        kubectl apply -f flask-cicd-app/k8s/deployment.yaml --validate=true
+                        kubectl apply -f flask-cicd-app/k8s/service.yaml --validate=true
                     '''
                 }
             }
@@ -45,7 +51,6 @@ pipeline {
             steps {
                 echo "🔍 Getting pod status and logs..."
                 sh 'sleep 10'
-
                 script {
                     def podName = sh(
                         script: 'kubectl get pods -o jsonpath="{.items[0].metadata.name}"',
