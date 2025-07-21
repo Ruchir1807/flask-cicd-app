@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
-    }
-
     stages {
         stage('Clone Repo') {
             steps {
@@ -26,9 +22,6 @@ pipeline {
             }
         }
 
-        // ⚠️ Disabled because Jenkins can't access minikube CLI inside container
-        // If running Jenkins outside container or in host, uncomment below
-        /*
         stage('Load Image into Minikube') {
             steps {
                 echo "📤 Loading image into Minikube..."
@@ -37,7 +30,6 @@ pipeline {
                 }
             }
         }
-        */
 
         stage('Deploy to Kubernetes') {
             steps {
